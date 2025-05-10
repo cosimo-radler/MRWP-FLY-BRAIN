@@ -1,0 +1,32 @@
+{
+  "Ellipsoid_Body": {
+    "targeted": {
+      "critical_fraction": 0.8337244897959183,
+      "robustness_index": 0.5540406798170773
+    },
+    "random": {
+      "critical_fraction": 0.9312148257631743,
+      "robustness_index": 0.5687495734079586
+    }
+  },
+  "Fan_Shaped_Body": {
+    "targeted": {
+      "critical_fraction": 0.7748064743138634,
+      "robustness_index": 0.5191530612244897
+    },
+    "random": {
+      "critical_fraction": 0.9360701052755396,
+      "robustness_index": 0.5576377551020408
+    }
+  },
+  "Mushroom_Body_Kenyon_Cell": {
+    "targeted": {
+      "critical_fraction": 0.7266156462585033,
+      "robustness_index": 0.4713061224489795
+    },
+    "random": {
+      "critical_fraction": 0.9038219503257977,
+      "robustness_index": 0.5049873469387754
+    }
+  }
+}

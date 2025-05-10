@@ -1,43 +1,114 @@
-# Drosophila Circuit Robustness Analysis
+# Drosophila Neural Circuit Robustness Analysis
 
-This project compares the bond-percolation thresholds of two Drosophila learning circuits to analyze their relative robustness to random synaptic loss.
+This project analyzes the robustness of neural circuits in the Drosophila brain, specifically focusing on:
+- Ellipsoid Body (EB)
+- Fan-shaped Body (FB)
+- Mushroom Body Kenyon Cells (MB-KC)
 
-## Research Question
+## Project Overview
 
-How does the critical bond-percolation threshold qc of the ellipsoid-body subnetwork compare to that of the mushroom-body (Kenyon-cell) subnetwork under random edge removal, and what does this reveal about the relative robustness of visual- versus olfactory-learning circuits in Drosophila?
+This research investigates the structural robustness of neural circuits in the Drosophila brain by 
+analyzing how these networks respond to targeted attacks and random failures. We compare real neural 
+networks to configuration models with preserved degree distributions to identify unique properties
+that might contribute to robustness.
 
 ## Project Structure
 
-- `src/`: Python scripts for data acquisition, processing, and analysis
-- `data/`: Raw and processed connectome data
-- `results/`: Analysis outputs (thresholds, statistics)
-- `figures/`: Generated plots and visualizations
+### Source Code (`src/`)
 
-## Setup
+- **data/**: Data acquisition from the hemibrain dataset
+  - `data_acquisition.py`: Fetches connectome data using the neuPrint API
 
-1. Install requirements:
-   ```
-   pip install -r requirements.txt
-   ```
+- **models/**: Configuration model creation
+  - `configuration_model.py`: Creates configuration models preserving degree distributions
+  - `config_model_percolation.py`: Percolation analysis on configuration models
+  - `targeted_attack_config_models.py`: Targeted attack simulations on configuration models
+  - `export_enhanced_config_models.py`: Exports models with enhanced properties
 
-2. Run data acquisition script:
-   ```
-   python src/data_acquisition.py
-   ```
+- **analysis/**: Network analysis
+  - `targeted_attack_analysis.py`: Analysis of targeted attacks on networks
+  - `percolation_analysis.py`: Percolation analysis on real networks
+  - `betweenness_attack_analysis.py`: Betweenness-based attack simulations
+  - `network_metrics_comparison.py`: Comparison of network metrics
 
-3. Run percolation analysis:
-   ```
-   python src/percolation_analysis.py
-   ```
+- **visualization/**: Visualizing results
+  - `network_visualization.py`: Visualization of network structures
+  - `create_percolation_comparison.py`: Creates percolation comparison visualizations
+  - `create_multipanel_attack_comparison.py`: Creates multipanel attack comparison visualizations
+  - `create_combined_network_figures.py`: Creates combined analysis figures per network
 
-## Data Sources
+### Data & Output Directories (Project Root)
 
-- Hemibrain EM connectome
-- Virtual Fly Brain / neuPrint
+- **data/**: Contains raw and processed network data
+- **config_models/**: Contains configuration model network files
+- **Gephi Graphs/**: Contains Gephi visualization files
+  - `real_models/`: Gephi files for real neural networks
+  - `config_models/`: Gephi files for configuration models
+- **results/**: Contains analysis results in CSV and JSON format
+- **figures/**: Contains visualization outputs and plots
+  - `combined/`: Contains the simplified combined analysis figures
 
-## Methods
+## Key Findings
 
-- Network construction using NetworkX
-- Bond-percolation simulation
-- LCC (Largest Connected Component) analysis
-- Statistical comparison of critical thresholds 
+- Neural circuits in the Drosophila brain show different levels of robustness to targeted attacks
+- Configuration models reveal that degree distribution alone does not fully explain the observed robustness
+- The Mushroom Body Kenyon Cell network shows particularly high resilience to targeted attacks
+
+## Getting Started
+
+### Full Analysis Pipeline
+
+To run the full analysis, execute each step sequentially:
+
+```
+python -m src.data.data_acquisition
+python -m src.models.configuration_model
+python -m src.analysis.targeted_attack_analysis
+python -m src.analysis.percolation_analysis
+python -m src.visualization.create_multipanel_attack_comparison
+```
+
+### Simplified Analysis Pipeline
+
+For a simplified analysis that generates only the essential combined figures, run:
+
+```
+./run_essential_analysis.py
+```
+
+This script will:
+1. Acquire data from the hemibrain dataset (or generate sample data)
+2. Create configuration models preserving degree distributions
+3. Perform percolation analysis
+4. Run targeted attack simulations
+5. Generate one combined figure per network showing:
+   - Normalized degree distribution comparison
+   - Percolation performance comparison
+   - Targeted attack analysis
+
+The combined figures will be saved in `src/figures/combined/`.
+
+## Combined Analysis Figures
+
+Each combined figure contains:
+- Top row: Normalized in-degree and out-degree distributions comparing original and configuration models
+- Bottom left: Percolation analysis comparing the robustness of original and configuration models
+- Bottom right: Targeted attack analysis comparing degree-based vs random node removal
+
+These figures provide a concise visual comparison of the structural properties and robustness characteristics of each neural circuit, including both uniform (percolation) and targeted attack scenarios.
+
+## Requirements
+
+- Python 3.7+
+- NetworkX
+- NumPy
+- Pandas
+- Matplotlib
+- Seaborn
+- Requests
+
+See `requirements.txt` for exact version requirements.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 

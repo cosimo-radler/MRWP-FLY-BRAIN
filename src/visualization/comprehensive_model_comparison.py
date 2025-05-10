@@ -7,6 +7,7 @@ This script creates a multi-panel visualization comparing:
    unscaled configuration models, and upscaled configuration models (3500 nodes) (top row)
 2. Percolation results for random edge removal (middle row)
 3. Targeted attack results for degree centrality and betweenness centrality (bottom two rows)
+4. Network metrics comparison table (added as a new panel)
 """
 
 import os
@@ -17,6 +18,7 @@ import seaborn as sns
 import networkx as nx
 from matplotlib.gridspec import GridSpec
 from collections import Counter
+from matplotlib.table import Table
 
 # Set the style
 sns.set_style("whitegrid")
@@ -363,13 +365,228 @@ def plot_percolation_comparison(ax, network_type, title):
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
+def calculate_network_metrics(G):
+    """Calculate key network metrics for a graph.
+    
+    Args:
+        G: NetworkX Graph
+        
+    Returns:
+        Dictionary with calculated metrics
+    """
+    if G is None:
+        return None
+    
+    # Convert to undirected for consistent calculations
+    G_undirected = G.to_undirected()
+    
+    # Basic metrics
+    n_nodes = G_undirected.number_of_nodes()
+    n_edges = G_undirected.number_of_edges()
+    
+    # Average degree
+    avg_degree = 2 * n_edges / n_nodes
+    
+    try:
+        # Clustering coefficient - measures triangle density
+        clustering = nx.average_clustering(G_undirected)
+    except:
+        clustering = np.nan
+    
+    try:
+        # Path length metrics
+        if nx.is_connected(G_undirected):
+            avg_path_length = nx.average_shortest_path_length(G_undirected)
+            diameter = nx.diameter(G_undirected)
+        else:
+            # If graph is not connected, calculate for largest component
+            largest_cc = max(nx.connected_components(G_undirected), key=len)
+            largest_subnet = G_undirected.subgraph(largest_cc)
+            avg_path_length = nx.average_shortest_path_length(largest_subnet)
+            diameter = nx.diameter(largest_subnet)
+    except:
+        avg_path_length = np.nan
+        diameter = np.nan
+    
+    # Return metrics dictionary
+    return {
+        'Nodes': n_nodes,
+        'Edges': n_edges,
+        'Avg Degree': round(avg_degree, 2),
+        'Clustering': round(clustering, 3),
+        'Avg Path Length': round(avg_path_length, 2) if not np.isnan(avg_path_length) else 'N/A',
+        'Diameter': diameter if not np.isnan(diameter) else 'N/A'
+    }
+
+def extract_percolation_threshold(network_type, model_type='original'):
+    """Extract percolation threshold from results.
+    
+    Args:
+        network_type: 'eb', 'fb', or 'mb_kc'
+        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
+        
+    Returns:
+        Percolation threshold value
+    """
+    df = load_percolation_results(network_type, model_type)
+    
+    if df is None or 'removal_probability' not in df.columns or 'mean_lcc_size' not in df.columns:
+        return np.nan
+    
+    # Find threshold where LCC drops below 0.05
+    for i in range(len(df) - 1):
+        if df['mean_lcc_size'].iloc[i] >= 0.05 and df['mean_lcc_size'].iloc[i+1] < 0.05:
+            # Linear interpolation
+            x1 = df['removal_probability'].iloc[i]
+            x2 = df['removal_probability'].iloc[i+1]
+            y1 = df['mean_lcc_size'].iloc[i]
+            y2 = df['mean_lcc_size'].iloc[i+1]
+            
+            threshold = x1 + (x2 - x1) * (0.05 - y1) / (y2 - y1)
+            return round(threshold, 3)
+    
+    return np.nan
+
+def extract_attack_threshold(network_type, attack_strategy, model_type='original'):
+    """Extract attack threshold from results.
+    
+    Args:
+        network_type: 'eb', 'fb', or 'mb_kc'
+        attack_strategy: 'degree' or 'betweenness'
+        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
+        
+    Returns:
+        Attack threshold value
+    """
+    df = load_attack_results(network_type, attack_strategy, model_type)
+    
+    if df is None or 'removal_probability' not in df.columns or 'mean_lcc_size' not in df.columns:
+        return np.nan
+    
+    # Find threshold where LCC drops below 0.05
+    for i in range(len(df) - 1):
+        if df['mean_lcc_size'].iloc[i] >= 0.05 and df['mean_lcc_size'].iloc[i+1] < 0.05:
+            # Linear interpolation
+            x1 = df['removal_probability'].iloc[i]
+            x2 = df['removal_probability'].iloc[i+1]
+            y1 = df['mean_lcc_size'].iloc[i]
+            y2 = df['mean_lcc_size'].iloc[i+1]
+            
+            threshold = x1 + (x2 - x1) * (0.05 - y1) / (y2 - y1)
+            return round(threshold, 3)
+    
+    return np.nan
+
+def create_metrics_table(ax, network_type):
+    """Create a table of network metrics for all model types.
+    
+    Args:
+        ax: Matplotlib axis
+        network_type: 'eb', 'fb', or 'mb_kc'
+    """
+    # Headers for the table
+    column_labels = ['Metric', 'Original', 'Scaled Config', 'Unscaled Config', 'Upscaled Config']
+    row_labels = [
+        'Nodes', 
+        'Edges', 
+        'Avg Degree', 
+        'Clustering', 
+        'Avg Path Length', 
+        'Diameter',
+        'Percolation Threshold',
+        'Degree Attack Threshold',
+        'Betweenness Attack Threshold'
+    ]
+    
+    # Collect metrics for each model type
+    metrics = {}
+    for model_type in MODEL_TYPES:
+        # Load network
+        G = load_network(network_type, model_type=model_type)
+        
+        # Calculate basic network metrics
+        if G:
+            metrics[model_type] = calculate_network_metrics(G)
+            
+            # Add percolation and attack thresholds
+            perc_threshold = extract_percolation_threshold(network_type, model_type)
+            metrics[model_type]['Percolation Threshold'] = perc_threshold
+            
+            deg_threshold = extract_attack_threshold(network_type, 'degree', model_type)
+            metrics[model_type]['Degree Attack Threshold'] = deg_threshold
+            
+            bet_threshold = extract_attack_threshold(network_type, 'betweenness', model_type)
+            metrics[model_type]['Betweenness Attack Threshold'] = bet_threshold
+    
+    # Create table data
+    cell_data = []
+    for row_label in row_labels:
+        row = [row_label]
+        for i, model_type in enumerate(MODEL_TYPES):
+            if model_type in metrics and metrics[model_type] is not None and row_label in metrics[model_type]:
+                row.append(metrics[model_type][row_label])
+            else:
+                row.append('N/A')
+        cell_data.append(row)
+    
+    # Create the table
+    ax.axis('tight')
+    ax.axis('off')
+    
+    table = ax.table(
+        cellText=cell_data,
+        colLabels=column_labels,
+        loc='center',
+        cellLoc='center'
+    )
+    
+    # Style the table
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 1.5)
+    
+    # Define colors with proper alpha values
+    header_color = '#E6E6E6'
+    highlight_colors = {
+        'original': (0.0, 0.0, 1.0, 0.2),       # Blue with alpha
+        'scaled_config': (1.0, 0.0, 0.0, 0.2),  # Red with alpha
+        'unscaled_config': (0.0, 0.8, 0.0, 0.2), # Green with alpha
+        'upscaled_config': (0.5, 0.0, 0.5, 0.2)  # Purple with alpha
+    }
+    
+    # Color the header row
+    for j, label in enumerate(column_labels):
+        cell = table[(0, j)]
+        cell.set_facecolor(header_color)
+        cell.set_text_props(weight='bold')
+    
+    # Color the metric names column
+    for i in range(len(row_labels)):
+        cell = table[(i+1, 0)]
+        cell.set_facecolor(header_color)
+        cell.set_text_props(weight='bold')
+    
+    # Highlight percolation and attack thresholds with colors
+    highlight_rows = [6, 7, 8]  # Percolation, Degree Attack, Betweenness Attack (0-indexed after column labels)
+    for i in highlight_rows:
+        for j in range(1, len(column_labels)):
+            cell = table[(i+1, j)]  # +1 to account for header row
+            cell_value = cell.get_text().get_text()
+            if cell_value != 'N/A' and cell_value != '':
+                model_type = MODEL_TYPES[j-1]
+                cell.set_facecolor(highlight_colors[model_type])
+    
+    ax.set_title(f"{NETWORKS[network_type]} Network Metrics", fontsize=14, fontweight='bold', pad=20)
+    
+    return metrics
+
 def create_comprehensive_visualization():
     """Create the comprehensive multipanel visualization."""
-    # Create figure with GridSpec for more control - 4 rows, 3 columns
-    fig = plt.figure(figsize=(18, 24))
-    gs = GridSpec(4, 3, figure=fig, wspace=0.3, hspace=0.4)
+    # Create figure with GridSpec for more control - 5 rows, 3 columns
+    fig = plt.figure(figsize=(18, 30))  # Increased height for new row
+    gs = GridSpec(5, 3, figure=fig, wspace=0.3, hspace=0.4)  # 5 rows now
     
-    # Create the panels - 4 rows, 3 columns
+    # Create the panels - 5 rows, 3 columns
     # Row 1: Degree distributions
     ax_deg_eb = fig.add_subplot(gs[0, 0])  # EB degree distribution
     ax_deg_fb = fig.add_subplot(gs[0, 1])  # FB degree distribution
@@ -389,6 +606,11 @@ def create_comprehensive_visualization():
     ax_bet_att_eb = fig.add_subplot(gs[3, 0])  # EB betweenness attack
     ax_bet_att_fb = fig.add_subplot(gs[3, 1])  # FB betweenness attack
     ax_bet_att_mb = fig.add_subplot(gs[3, 2])  # MB betweenness attack
+    
+    # Row 5: Network metrics tables
+    ax_metrics_eb = fig.add_subplot(gs[4, 0])  # EB metrics
+    ax_metrics_fb = fig.add_subplot(gs[4, 1])  # FB metrics
+    ax_metrics_mb = fig.add_subplot(gs[4, 2])  # MB metrics
     
     # Plot degree distributions (Row 1)
     degree_data = {}
@@ -411,17 +633,23 @@ def create_comprehensive_visualization():
     plot_attack_comparison(ax_bet_att_fb, 'fb', 'betweenness', f"{NETWORKS['fb']} Betweenness Centrality Attack")
     plot_attack_comparison(ax_bet_att_mb, 'mb_kc', 'betweenness', f"{NETWORKS['mb_kc']} Betweenness Centrality Attack")
     
+    # Create network metrics tables (Row 5)
+    create_metrics_table(ax_metrics_eb, 'eb')
+    create_metrics_table(ax_metrics_fb, 'fb')
+    create_metrics_table(ax_metrics_mb, 'mb_kc')
+    
     # Add main title
     plt.suptitle('Comprehensive Network Model Comparison: Structure and Robustness Analysis', 
                 fontsize=20, fontweight='bold', y=0.98)
     
     # Add descriptive subtitles for rows
-    y_positions = [0.76, 0.51, 0.26, 0.01]
+    y_positions = [0.81, 0.65, 0.48, 0.31, 0.14]  # Adjusted for 5 rows
     row_titles = [
         'Structural Analysis: Normalized Degree Distributions [P(k)]',
         'Random Percolation Analysis: Network Robustness against Random Failures',
         'Degree Centrality Attack Analysis: Network Robustness against Targeted Attacks',
-        'Betweenness Centrality Attack Analysis: Network Robustness against Targeted Attacks'
+        'Betweenness Centrality Attack Analysis: Network Robustness against Targeted Attacks',
+        'Network Metrics Comparison: Structural Properties and Critical Thresholds'
     ]
     
     for y, title in zip(y_positions, row_titles):

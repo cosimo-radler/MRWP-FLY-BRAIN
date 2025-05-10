@@ -1,0 +1,14 @@
+{
+    "degree": {
+        "critical_fraction": 0.8113945578231292,
+        "robustness_index": 0.5166200259367961
+    },
+    "betweenness": {
+        "critical_fraction": 0.8615467239527389,
+        "robustness_index": 0.4800696198211725
+    },
+    "random": {
+        "critical_fraction": 0.9159029649595687,
+        "robustness_index": 0.5332656473960823
+    }
+}

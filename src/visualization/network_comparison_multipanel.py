@@ -3,8 +3,8 @@
 Multi-panel Network Comparison Visualization
 
 This script creates a 6-panel visualization comparing:
-1. Degree distributions of the original networks and their configuration models (top row)
-2. Percolation results for the original networks and their configuration models (bottom row)
+1. Degree distributions of the original networks, their scaled configuration models, and unscaled configuration models (top row)
+2. Percolation results for all three model types (bottom row)
 """
 
 import os
@@ -31,6 +31,7 @@ plt.rcParams.update({
 # Constants
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models")
+UNSCALED_CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models", "unscaled")
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
 FIGURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "figures")
 MULTIPANEL_DIR = os.path.join(FIGURES_DIR, "multipanel")
@@ -54,20 +55,33 @@ STRATEGY_NAMES = {
     'degree': 'Degree Centrality'
 }
 
-def load_network(network_type, is_config=False):
-    """Load original or configuration model network from GEXF file.
+# Model types
+MODEL_TYPES = ['original', 'scaled_config', 'unscaled_config']
+MODEL_LABELS = {
+    'original': 'Original',
+    'scaled_config': 'Scaled Config',
+    'unscaled_config': 'Unscaled Config'
+}
+
+def load_network(network_type, model_type='original'):
+    """Load network from GEXF file.
     
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
-        is_config: Whether to load the configuration model
+        model_type: 'original', 'scaled_config', or 'unscaled_config'
         
     Returns:
         NetworkX Graph
     """
-    if is_config:
-        file_path = os.path.join(CONFIG_MODEL_DIR, f"{network_type}_config_model.gexf")
-    else:
+    if model_type == 'original':
         file_path = os.path.join(DATA_DIR, f"{network_type}_network.gexf")
+    elif model_type == 'scaled_config':
+        file_path = os.path.join(CONFIG_MODEL_DIR, f"{network_type}_config_model.gexf")
+    elif model_type == 'unscaled_config':
+        file_path = os.path.join(UNSCALED_CONFIG_MODEL_DIR, f"{network_type}_unscaled_config_model.gexf")
+    else:
+        print(f"Unknown model type: {model_type}")
+        return None
     
     try:
         G = nx.read_gexf(file_path)
@@ -102,13 +116,13 @@ def get_normalized_degree_distribution(G):
     
     return sorted_degrees, frequencies
 
-def load_percolation_results(network_type, attack_strategy, is_config=False):
+def load_percolation_results(network_type, attack_strategy, model_type='original'):
     """Load percolation or targeted attack results.
     
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
         attack_strategy: 'random', 'betweenness', or 'degree'
-        is_config: Whether to load results for config model
+        model_type: 'original', 'scaled_config', or 'unscaled_config'
         
     Returns:
         DataFrame with results
@@ -122,13 +136,20 @@ def load_percolation_results(network_type, attack_strategy, is_config=False):
     
     if attack_strategy == 'random':
         # For random percolation, use percolation results
-        config_path = f"{network_type}_config_model_percolation_results.csv" if is_config else f"{full_name}_percolation_results.csv"
+        if model_type == 'original':
+            file_path = os.path.join(RESULTS_DIR, f"{full_name}_percolation_results.csv")
+        elif model_type == 'scaled_config':
+            file_path = os.path.join(RESULTS_DIR, f"{network_type}_config_model_percolation_results.csv")
+        elif model_type == 'unscaled_config':
+            file_path = os.path.join(RESULTS_DIR, f"{network_type}_unscaled_config_model_percolation_results.csv")
     else:
         # For targeted attacks, use attack results
-        config_prefix = "config_" if is_config else ""
-        config_path = f"{full_name}_{config_prefix}{attack_strategy}_attack_results.csv"
-    
-    file_path = os.path.join(RESULTS_DIR, config_path)
+        if model_type == 'original':
+            file_path = os.path.join(RESULTS_DIR, f"{full_name}_{attack_strategy}_attack_results.csv")
+        elif model_type == 'scaled_config':
+            file_path = os.path.join(RESULTS_DIR, f"{full_name}_config_{attack_strategy}_attack_results.csv")
+        elif model_type == 'unscaled_config':
+            file_path = os.path.join(RESULTS_DIR, f"{full_name}_unscaled_config_{attack_strategy}_attack_results.csv")
     
     try:
         df = pd.read_csv(file_path)
@@ -145,7 +166,7 @@ def load_percolation_results(network_type, attack_strategy, is_config=False):
         return None
 
 def plot_degree_distribution(ax, network_type, title):
-    """Plot degree distribution comparison for original and config model.
+    """Plot degree distribution comparison for original, scaled config, and unscaled config models.
     
     Args:
         ax: Matplotlib axis
@@ -153,22 +174,28 @@ def plot_degree_distribution(ax, network_type, title):
         title: Title for the plot
     """
     # Load networks
-    G_original = load_network(network_type, is_config=False)
-    G_config = load_network(network_type, is_config=True)
+    G_original = load_network(network_type, model_type='original')
+    G_scaled_config = load_network(network_type, model_type='scaled_config')
+    G_unscaled_config = load_network(network_type, model_type='unscaled_config')
     
     # Get degree distributions
     orig_degrees, orig_freq = get_normalized_degree_distribution(G_original)
-    config_degrees, config_freq = get_normalized_degree_distribution(G_config)
+    scaled_config_degrees, scaled_config_freq = get_normalized_degree_distribution(G_scaled_config)
+    unscaled_config_degrees, unscaled_config_freq = get_normalized_degree_distribution(G_unscaled_config)
     
     # Print information about the degree distributions
     print(f"\n{title} Degree Distribution Analysis:")
-    print(f"Original network: {G_original.number_of_nodes()} nodes, {G_original.number_of_edges()} edges")
-    print(f"Config model: {G_config.number_of_nodes()} nodes, {G_config.number_of_edges()} edges")
-    print(f"Number of unique degrees - Original: {len(orig_degrees)}, Config: {len(config_degrees)}")
+    print(f"Original network: {G_original.number_of_nodes() if G_original else 'N/A'} nodes, "
+          f"{G_original.number_of_edges() if G_original else 'N/A'} edges")
+    print(f"Scaled config model: {G_scaled_config.number_of_nodes() if G_scaled_config else 'N/A'} nodes, "
+          f"{G_scaled_config.number_of_edges() if G_scaled_config else 'N/A'} edges")
+    print(f"Unscaled config model: {G_unscaled_config.number_of_nodes() if G_unscaled_config else 'N/A'} nodes, "
+          f"{G_unscaled_config.number_of_edges() if G_unscaled_config else 'N/A'} edges")
     
-    # Use scatter plot with connecting lines instead of stem plots
+    # Use scatter plot with connecting lines
     ax.plot(orig_degrees, orig_freq, 'bo-', linewidth=1.5, markersize=5, alpha=0.8, label='Original')
-    ax.plot(config_degrees, config_freq, 'ro-', linewidth=1.5, markersize=5, alpha=0.8, label='Config Model')
+    ax.plot(scaled_config_degrees, scaled_config_freq, 'ro-', linewidth=1.5, markersize=5, alpha=0.8, label='Scaled Config')
+    ax.plot(unscaled_config_degrees, unscaled_config_freq, 'go-', linewidth=1.5, markersize=5, alpha=0.8, label='Unscaled Config')
     
     # Set log scales for better visualization
     ax.set_xscale('log')
@@ -185,12 +212,14 @@ def plot_degree_distribution(ax, network_type, title):
     return {
         'original_degrees': orig_degrees,
         'original_freq': orig_freq,
-        'config_degrees': config_degrees,
-        'config_freq': config_freq
+        'scaled_config_degrees': scaled_config_degrees,
+        'scaled_config_freq': scaled_config_freq,
+        'unscaled_config_degrees': unscaled_config_degrees,
+        'unscaled_config_freq': unscaled_config_freq
     }
 
 def plot_percolation_comparison(ax, network_type, title):
-    """Plot percolation comparison for original and config models with all attack strategies.
+    """Plot percolation comparison for all model types and attack strategies.
     
     Args:
         ax: Matplotlib axis
@@ -206,48 +235,35 @@ def plot_percolation_comparison(ax, network_type, title):
     
     line_styles = {
         'original': '-',
-        'config': '--'
+        'scaled_config': '--',
+        'unscaled_config': ':'
     }
     
     markers = {
         'original': 'o',
-        'config': 's'
+        'scaled_config': 's',
+        'unscaled_config': '^'
     }
     
     marker_size = 6
     marker_every = 7
     
-    # Plot each attack type
+    # Plot each attack type for each model type
     for attack in ATTACK_STRATEGIES:
-        # Load original results
-        orig_df = load_percolation_results(network_type, attack, is_config=False)
-        if orig_df is not None and 'removal_probability' in orig_df.columns and 'mean_lcc_size' in orig_df.columns:
-            ax.plot(
-                orig_df['removal_probability'],
-                orig_df['mean_lcc_size'],
-                color=colors[attack],
-                linestyle=line_styles['original'],
-                linewidth=2,
-                marker=markers['original'],
-                markersize=marker_size,
-                markevery=marker_every,
-                label=f"{STRATEGY_NAMES[attack]} (Original)"
-            )
-        
-        # Load config model results
-        config_df = load_percolation_results(network_type, attack, is_config=True)
-        if config_df is not None and 'removal_probability' in config_df.columns and 'mean_lcc_size' in config_df.columns:
-            ax.plot(
-                config_df['removal_probability'],
-                config_df['mean_lcc_size'],
-                color=colors[attack],
-                linestyle=line_styles['config'],
-                linewidth=2,
-                marker=markers['config'],
-                markersize=marker_size,
-                markevery=marker_every,
-                label=f"{STRATEGY_NAMES[attack]} (Config)"
-            )
+        for model_type in MODEL_TYPES:
+            results_df = load_percolation_results(network_type, attack, model_type=model_type)
+            if results_df is not None and 'removal_probability' in results_df.columns and 'mean_lcc_size' in results_df.columns:
+                ax.plot(
+                    results_df['removal_probability'],
+                    results_df['mean_lcc_size'],
+                    color=colors[attack],
+                    linestyle=line_styles[model_type],
+                    linewidth=2,
+                    marker=markers[model_type],
+                    markersize=marker_size,
+                    markevery=marker_every,
+                    label=f"{STRATEGY_NAMES[attack]} ({MODEL_LABELS[model_type]})"
+                )
     
     # Add threshold line
     ax.axhline(y=0.05, color='gray', linestyle=':', linewidth=1.0)
@@ -300,37 +316,44 @@ def create_multipanel_visualization():
     # Analyze differences in degree distribution
     print("\n===== Comparison of Degree Distributions =====")
     for network, data in degree_data.items():
-        # Get set of degrees in both distributions
-        all_degrees = set(data['original_degrees']).union(set(data['config_degrees']))
+        print(f"\n{NETWORKS[network]} degree distribution analysis:")
+        
+        # Compare original vs scaled config
+        orig_degrees = set(data['original_degrees'])
+        scaled_degrees = set(data['scaled_config_degrees'])
+        unscaled_degrees = set(data['unscaled_config_degrees'])
         
         # Check for degrees found in only one distribution
-        only_in_original = set(data['original_degrees']) - set(data['config_degrees'])
-        only_in_config = set(data['config_degrees']) - set(data['original_degrees'])
+        only_in_original = orig_degrees - scaled_degrees - unscaled_degrees
+        only_in_scaled = scaled_degrees - orig_degrees - unscaled_degrees
+        only_in_unscaled = unscaled_degrees - orig_degrees - scaled_degrees
         
-        print(f"\n{NETWORKS[network]} unique degree analysis:")
         if only_in_original:
             print(f"Degrees found only in original network: {sorted(only_in_original)}")
-        if only_in_config:
-            print(f"Degrees found only in config model: {sorted(only_in_config)}")
+        if only_in_scaled:
+            print(f"Degrees found only in scaled config model: {sorted(only_in_scaled)}")
+        if only_in_unscaled:
+            print(f"Degrees found only in unscaled config model: {sorted(only_in_unscaled)}")
         
-        # Check for differences in frequency for common degrees
-        common_degrees = set(data['original_degrees']).intersection(set(data['config_degrees']))
-        orig_freq_dict = dict(zip(data['original_degrees'], data['original_freq']))
-        config_freq_dict = dict(zip(data['config_degrees'], data['config_freq']))
-        
-        max_diff = 0
-        max_diff_degree = None
-        for degree in common_degrees:
-            diff = abs(orig_freq_dict[degree] - config_freq_dict[degree])
-            if diff > max_diff:
-                max_diff = diff
-                max_diff_degree = degree
-        
-        if max_diff_degree is not None:
-            print(f"Largest frequency difference: Degree {max_diff_degree}, " +
-                  f"Original: {orig_freq_dict[max_diff_degree]:.6f}, " +
-                  f"Config: {config_freq_dict[max_diff_degree]:.6f}, " +
-                  f"Diff: {max_diff:.6f}")
+        # Find largest frequency difference between original and unscaled
+        common_degrees_orig_unscaled = orig_degrees.intersection(unscaled_degrees)
+        if common_degrees_orig_unscaled:
+            orig_freq_dict = dict(zip(data['original_degrees'], data['original_freq']))
+            unscaled_freq_dict = dict(zip(data['unscaled_config_degrees'], data['unscaled_config_freq']))
+            
+            max_diff = 0
+            max_diff_degree = None
+            for degree in common_degrees_orig_unscaled:
+                diff = abs(orig_freq_dict.get(degree, 0) - unscaled_freq_dict.get(degree, 0))
+                if diff > max_diff:
+                    max_diff = diff
+                    max_diff_degree = degree
+            
+            if max_diff_degree is not None:
+                print(f"Largest frequency difference between original and unscaled: Degree {max_diff_degree}, " +
+                    f"Original: {orig_freq_dict.get(max_diff_degree, 0):.6f}, " +
+                    f"Unscaled: {unscaled_freq_dict.get(max_diff_degree, 0):.6f}, " +
+                    f"Diff: {max_diff:.6f}")
     
     # Save the figure
     output_path = os.path.join(MULTIPANEL_DIR, 'network_structure_and_percolation.png')

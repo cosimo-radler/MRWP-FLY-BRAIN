@@ -1,0 +1,20 @@
+{
+  "Ellipsoid_Body": {
+    "threshold_simple": 0.9336212300619906,
+    "threshold_fitted": 0.9323207684115515,
+    "beta": 0.6022388829317331,
+    "robustness_index": 0.5675414647464336
+  },
+  "Fan_Shaped_Body": {
+    "threshold_simple": 0.9332597904026475,
+    "threshold_fitted": 0.9518943024961859,
+    "beta": 0.671571569545161,
+    "robustness_index": 0.5578989795918367
+  },
+  "Mushroom_Body_Kenyon_Cell": {
+    "threshold_simple": 0.8970376832250058,
+    "threshold_fitted": 0.9999999999999999,
+    "beta": 0.9840222487143252,
+    "robustness_index": 0.5046853061224489
+  }
+}

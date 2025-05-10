@@ -1,0 +1,14 @@
+{
+  "Ellipsoid_Body": {
+    "critical_fraction": 0.9168478260869565,
+    "robustness_index": 0.4913949275362319
+  },
+  "Fan_Shaped_Body": {
+    "critical_fraction": 0.9212962962962963,
+    "robustness_index": 0.4898541666666667
+  },
+  "Mushroom_Body_Kenyon_Cell": {
+    "critical_fraction": 0.8733595800524935,
+    "robustness_index": 0.4719833333333333
+  }
+}

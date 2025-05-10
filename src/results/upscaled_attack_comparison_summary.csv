@@ -1,0 +1,13 @@
+network_type,attack_type,model_type,critical_threshold
+eb,degree,original,0.8442948717948718
+eb,degree,upscaled_config_model,0.8246503496503497
+eb,betweenness,original,0.9075925925925926
+eb,betweenness,upscaled_config_model,0.8996774193548387
+fb,degree,original,0.7941747572815534
+fb,degree,upscaled_config_model,0.8052631578947369
+fb,betweenness,original,0.9235714285714286
+fb,betweenness,upscaled_config_model,0.8836158192090396
+mb_kc,degree,original,0.7422972972972973
+mb_kc,degree,upscaled_config_model,0.7493965517241379
+mb_kc,betweenness,original,0.8868131868131869
+mb_kc,betweenness,upscaled_config_model,0.9051136363636364

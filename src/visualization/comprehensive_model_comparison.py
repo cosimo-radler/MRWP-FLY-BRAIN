@@ -3,7 +3,8 @@
 Comprehensive Network Model Comparison Visualization
 
 This script creates a multi-panel visualization comparing:
-1. Degree distributions of original networks, scaled configuration models, and unscaled configuration models (top row)
+1. Degree distributions of original networks, scaled configuration models (1500 nodes), 
+   unscaled configuration models, and upscaled configuration models (3500 nodes) (top row)
 2. Percolation results for random edge removal (middle row)
 3. Targeted attack results for degree centrality and betweenness centrality (bottom two rows)
 """
@@ -33,6 +34,7 @@ plt.rcParams.update({
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models")
 UNSCALED_CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models", "unscaled")
+UPSCALED_CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models", "upscaled")
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
 FIGURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "figures")
 MULTIPANEL_DIR = os.path.join(FIGURES_DIR, "multipanel")
@@ -49,30 +51,34 @@ NETWORKS = {
 }
 
 # Model types
-MODEL_TYPES = ['original', 'scaled_config', 'unscaled_config']
+MODEL_TYPES = ['original', 'scaled_config', 'unscaled_config', 'upscaled_config']
 MODEL_LABELS = {
     'original': 'Original',
-    'scaled_config': 'Scaled Config',
-    'unscaled_config': 'Unscaled Config'
+    'scaled_config': 'Scaled Config (1500)',
+    'unscaled_config': 'Unscaled Config',
+    'upscaled_config': 'Upscaled Config (3500)'
 }
 
 # Visualization parameters
 COLORS = {
     'original': 'blue',
     'scaled_config': 'red',
-    'unscaled_config': 'green'
+    'unscaled_config': 'green',
+    'upscaled_config': 'purple'
 }
 
 LINE_STYLES = {
     'original': '-',
     'scaled_config': '--',
-    'unscaled_config': ':'
+    'unscaled_config': ':',
+    'upscaled_config': '-.'
 }
 
 MARKERS = {
     'original': 'o',
     'scaled_config': 's',
-    'unscaled_config': '^'
+    'unscaled_config': '^',
+    'upscaled_config': 'd'
 }
 
 def load_network(network_type, model_type='original'):
@@ -80,7 +86,7 @@ def load_network(network_type, model_type='original'):
     
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
-        model_type: 'original', 'scaled_config', or 'unscaled_config'
+        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
         
     Returns:
         NetworkX Graph
@@ -91,6 +97,8 @@ def load_network(network_type, model_type='original'):
         file_path = os.path.join(CONFIG_MODEL_DIR, f"{network_type}_config_model.gexf")
     elif model_type == 'unscaled_config':
         file_path = os.path.join(UNSCALED_CONFIG_MODEL_DIR, f"{network_type}_unscaled_config_model.gexf")
+    elif model_type == 'upscaled_config':
+        file_path = os.path.join(UPSCALED_CONFIG_MODEL_DIR, f"{network_type}_upscaled_config_model.gexf")
     else:
         print(f"Unknown model type: {model_type}")
         return None
@@ -133,7 +141,7 @@ def load_percolation_results(network_type, model_type='original'):
     
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
-        model_type: 'original', 'scaled_config', or 'unscaled_config'
+        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
         
     Returns:
         DataFrame with results
@@ -152,6 +160,8 @@ def load_percolation_results(network_type, model_type='original'):
         file_path = os.path.join(RESULTS_DIR, f"{network_type}_config_model_percolation_results.csv")
     elif model_type == 'unscaled_config':
         file_path = os.path.join(RESULTS_DIR, f"{network_type}_unscaled_config_model_percolation_results.csv")
+    elif model_type == 'upscaled_config':
+        file_path = os.path.join(RESULTS_DIR, f"{network_type}_upscaled_config_model_percolation_results.csv")
     
     try:
         df = pd.read_csv(file_path)
@@ -173,7 +183,7 @@ def load_attack_results(network_type, attack_strategy, model_type='original'):
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
         attack_strategy: 'betweenness' or 'degree'
-        model_type: 'original', 'scaled_config', or 'unscaled_config'
+        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
         
     Returns:
         DataFrame with results
@@ -192,6 +202,8 @@ def load_attack_results(network_type, attack_strategy, model_type='original'):
         file_path = os.path.join(RESULTS_DIR, f"{full_name}_config_{attack_strategy}_attack_results.csv")
     elif model_type == 'unscaled_config':
         file_path = os.path.join(RESULTS_DIR, f"{full_name}_unscaled_config_{attack_strategy}_attack_results.csv")
+    elif model_type == 'upscaled_config':
+        file_path = os.path.join(RESULTS_DIR, f"{network_type}_upscaled_config_model_{attack_strategy}_attack_results.csv")
     
     try:
         df = pd.read_csv(file_path)
@@ -199,6 +211,8 @@ def load_attack_results(network_type, attack_strategy, model_type='original'):
         # Standardize column names
         if 'removal_fraction' in df.columns:
             df['removal_probability'] = df['removal_fraction']
+        if 'fraction_removed' in df.columns:
+            df['removal_probability'] = df['fraction_removed']
         if 'lcc_size' in df.columns and 'mean_lcc_size' not in df.columns:
             df['mean_lcc_size'] = df['lcc_size']
             
@@ -236,19 +250,20 @@ def plot_degree_distribution(ax, network_type, title):
     
     # Plot each model type
     for model_type in MODEL_TYPES:
-        degrees = degree_data[model_type]['degrees']
-        freq = degree_data[model_type]['freq']
-        
-        ax.plot(
-            degrees, freq,
-            color=COLORS[model_type],
-            linestyle=LINE_STYLES[model_type],
-            marker=MARKERS[model_type],
-            linewidth=1.5,
-            markersize=5,
-            alpha=0.8,
-            label=MODEL_LABELS[model_type]
-        )
+        if model_type in degree_data and degree_data[model_type]['degrees']:
+            degrees = degree_data[model_type]['degrees']
+            freq = degree_data[model_type]['freq']
+            
+            ax.plot(
+                degrees, freq,
+                color=COLORS[model_type],
+                linestyle=LINE_STYLES[model_type],
+                marker=MARKERS[model_type],
+                linewidth=1.5,
+                markersize=5,
+                alpha=0.8,
+                label=MODEL_LABELS[model_type]
+            )
     
     # Set log scales for better visualization
     ax.set_xscale('log')
@@ -258,7 +273,7 @@ def plot_degree_distribution(ax, network_type, title):
     ax.set_title(title)
     ax.set_xlabel('Degree (log scale)')
     ax.set_ylabel('Normalized Frequency (log scale)\n[P(k) = fraction of nodes with degree k]')
-    ax.legend()
+    ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
     
     return degree_data

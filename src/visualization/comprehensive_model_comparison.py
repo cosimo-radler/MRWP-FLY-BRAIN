@@ -3,8 +3,9 @@
 Comprehensive Network Model Comparison Visualization
 
 This script creates a multi-panel visualization comparing:
-1. Degree distributions of original networks, scaled configuration models (1500 nodes), 
-   unscaled configuration models, and upscaled configuration models (3500 nodes) (top row)
+1. Degree distributions of original networks, scaled configuration models (1500 nodes),
+   unscaled configuration models, upscaled configuration models (3500 nodes),
+   and clustering-preserved configuration models (top row)
 2. Percolation results for random edge removal (middle row)
 3. Targeted attack results for degree centrality and betweenness centrality (bottom two rows)
 4. Network metrics comparison table (added as a new panel)
@@ -37,6 +38,7 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models")
 UNSCALED_CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models", "unscaled")
 UPSCALED_CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models", "upscaled")
+CLUSTERING_CONFIG_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config_models", "clustering")
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
 FIGURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "figures")
 MULTIPANEL_DIR = os.path.join(FIGURES_DIR, "multipanel")
@@ -53,12 +55,14 @@ NETWORKS = {
 }
 
 # Model types
-MODEL_TYPES = ['original', 'scaled_config', 'unscaled_config', 'upscaled_config']
+MODEL_TYPES = ['original', 'scaled_config', 'unscaled_config', 'upscaled_config', 'clustering_config', 'unscaled_clustering_config']
 MODEL_LABELS = {
     'original': 'Original',
     'scaled_config': 'Scaled Config (1500)',
     'unscaled_config': 'Unscaled Config',
-    'upscaled_config': 'Upscaled Config (3500)'
+    'upscaled_config': 'Upscaled Config (3500)',
+    'clustering_config': 'Clustering Config (1500)',
+    'unscaled_clustering_config': 'Unscaled Clustering Config'
 }
 
 # Visualization parameters
@@ -66,21 +70,27 @@ COLORS = {
     'original': 'blue',
     'scaled_config': 'red',
     'unscaled_config': 'green',
-    'upscaled_config': 'purple'
+    'upscaled_config': 'purple',
+    'clustering_config': 'orange',
+    'unscaled_clustering_config': 'brown'
 }
 
 LINE_STYLES = {
     'original': '-',
     'scaled_config': '--',
     'unscaled_config': ':',
-    'upscaled_config': '-.'
+    'upscaled_config': '-.',
+    'clustering_config': '--',
+    'unscaled_clustering_config': '-.'
 }
 
 MARKERS = {
     'original': 'o',
     'scaled_config': 's',
     'unscaled_config': '^',
-    'upscaled_config': 'd'
+    'upscaled_config': 'd',
+    'clustering_config': 'x',
+    'unscaled_clustering_config': 'P'
 }
 
 def load_network(network_type, model_type='original'):
@@ -88,7 +98,7 @@ def load_network(network_type, model_type='original'):
     
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
-        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
+        model_type: 'original', 'scaled_config', 'unscaled_config', 'upscaled_config', 'clustering_config', or 'unscaled_clustering_config'
         
     Returns:
         NetworkX Graph
@@ -101,6 +111,10 @@ def load_network(network_type, model_type='original'):
         file_path = os.path.join(UNSCALED_CONFIG_MODEL_DIR, f"{network_type}_unscaled_config_model.gexf")
     elif model_type == 'upscaled_config':
         file_path = os.path.join(UPSCALED_CONFIG_MODEL_DIR, f"{network_type}_upscaled_config_model.gexf")
+    elif model_type == 'clustering_config':
+        file_path = os.path.join(CLUSTERING_CONFIG_MODEL_DIR, "scaled", f"{network_type}_scaled_clustering_config_model.gexf")
+    elif model_type == 'unscaled_clustering_config':
+        file_path = os.path.join(CLUSTERING_CONFIG_MODEL_DIR, "unscaled", f"{network_type}_unscaled_clustering_config_model.gexf")
     else:
         print(f"Unknown model type: {model_type}")
         return None
@@ -143,7 +157,7 @@ def load_percolation_results(network_type, model_type='original'):
     
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
-        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
+        model_type: 'original', 'scaled_config', 'unscaled_config', 'upscaled_config', 'clustering_config', or 'unscaled_clustering_config'
         
     Returns:
         DataFrame with results
@@ -164,6 +178,10 @@ def load_percolation_results(network_type, model_type='original'):
         file_path = os.path.join(RESULTS_DIR, f"{network_type}_unscaled_config_model_percolation_results.csv")
     elif model_type == 'upscaled_config':
         file_path = os.path.join(RESULTS_DIR, f"{network_type}_upscaled_config_model_percolation_results.csv")
+    elif model_type == 'clustering_config':
+        file_path = os.path.join(RESULTS_DIR, f"{network_type}_clustering_config_model_percolation_results.csv")
+    elif model_type == 'unscaled_clustering_config':
+        file_path = os.path.join(RESULTS_DIR, f"{network_type}_unscaled_clustering_config_model_percolation_results.csv")
     
     try:
         df = pd.read_csv(file_path)
@@ -185,7 +203,7 @@ def load_attack_results(network_type, attack_strategy, model_type='original'):
     Args:
         network_type: 'eb', 'fb', or 'mb_kc'
         attack_strategy: 'betweenness' or 'degree'
-        model_type: 'original', 'scaled_config', 'unscaled_config', or 'upscaled_config'
+        model_type: 'original', 'scaled_config', 'unscaled_config', 'upscaled_config', 'clustering_config', or 'unscaled_clustering_config'
         
     Returns:
         DataFrame with results
@@ -206,6 +224,10 @@ def load_attack_results(network_type, attack_strategy, model_type='original'):
         file_path = os.path.join(RESULTS_DIR, f"{full_name}_unscaled_config_{attack_strategy}_attack_results.csv")
     elif model_type == 'upscaled_config':
         file_path = os.path.join(RESULTS_DIR, f"{network_type}_upscaled_config_model_{attack_strategy}_attack_results.csv")
+    elif model_type == 'clustering_config':
+        file_path = os.path.join(RESULTS_DIR, f"{network_type}_clustering_config_model_{attack_strategy}_attack_results.csv")
+    elif model_type == 'unscaled_clustering_config':
+        file_path = os.path.join(RESULTS_DIR, f"{network_type}_unscaled_clustering_config_model_{attack_strategy}_attack_results.csv")
     
     try:
         df = pd.read_csv(file_path)
@@ -485,7 +507,7 @@ def create_metrics_table(ax, network_type):
         network_type: 'eb', 'fb', or 'mb_kc'
     """
     # Headers for the table
-    column_labels = ['Metric', 'Original', 'Scaled Config', 'Unscaled Config', 'Upscaled Config']
+    column_labels = ['Metric', 'Original', 'Scaled Config', 'Unscaled Config', 'Upscaled Config', 'Clustering Config', 'Unscaled Clustering']
     row_labels = [
         'Nodes', 
         'Edges', 
@@ -542,7 +564,7 @@ def create_metrics_table(ax, network_type):
     
     # Style the table
     table.auto_set_font_size(False)
-    table.set_fontsize(10)
+    table.set_fontsize(9)  # Smaller font to fit more columns
     table.scale(1, 1.5)
     
     # Define colors with proper alpha values
@@ -551,7 +573,9 @@ def create_metrics_table(ax, network_type):
         'original': (0.0, 0.0, 1.0, 0.2),       # Blue with alpha
         'scaled_config': (1.0, 0.0, 0.0, 0.2),  # Red with alpha
         'unscaled_config': (0.0, 0.8, 0.0, 0.2), # Green with alpha
-        'upscaled_config': (0.5, 0.0, 0.5, 0.2)  # Purple with alpha
+        'upscaled_config': (0.5, 0.0, 0.5, 0.2),  # Purple with alpha
+        'clustering_config': (1.0, 0.5, 0.0, 0.2),  # Orange with alpha
+        'unscaled_clustering_config': (0.6, 0.3, 0.0, 0.2)  # Brown with alpha
     }
     
     # Color the header row
@@ -656,7 +680,7 @@ def create_comprehensive_visualization():
         fig.text(0.5, y, title, ha='center', va='bottom', fontsize=14, fontweight='bold')
     
     # Save the figure
-    output_path = os.path.join(MULTIPANEL_DIR, 'comprehensive_model_comparison.png')
+    output_path = os.path.join(MULTIPANEL_DIR, 'comprehensive_model_comparison_with_clustering.png')
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     
     print(f"\nComprehensive visualization saved to {output_path}")

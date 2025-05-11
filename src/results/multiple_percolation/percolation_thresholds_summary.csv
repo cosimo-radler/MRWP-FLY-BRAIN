@@ -1,0 +1,7 @@
+Network,Model Type,Edge Percolation Threshold,Node Percolation Threshold
+Ellipsoid Body,Scaled (1500 nodes),0.946,0.816
+Ellipsoid Body,Unscaled (original size),0.908,0.778
+Fan-shaped Body,Scaled (1500 nodes),0.93,0.787
+Fan-shaped Body,Unscaled (original size),0.911,0.77
+Mushroom Body KC,Scaled (1500 nodes),0.867,0.699
+Mushroom Body KC,Unscaled (original size),0.899,0.739

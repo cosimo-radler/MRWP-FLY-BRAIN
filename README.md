@@ -111,4 +111,42 @@ See `requirements.txt` for exact version requirements.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+# Interactive Dashboard for Network Model Comparison
+
+A new interactive web dashboard has been added to visualize and compare different network models!
+
+## Running the Dashboard
+
+1. Install dependencies:
+   ```
+   pip install dash dash-bootstrap-components plotly
+   ```
+
+2. Run the dashboard:
+   ```
+   python src/visualization/dashboard.py
+   ```
+
+3. Open your browser to:
+   ```
+   http://127.0.0.1:8050/
+   ```
+
+4. Or simply open `index.html` in your browser for project information and a link to the dashboard.
+
+## Features
+
+- Interactive toggling of models
+- Multiple visualization tabs for degree distributions, percolation results, and targeted attacks
+- Comprehensive metrics comparison
+- Select different brain regions (EB, FB, MB-KC)
+
+## Dashboard Screenshots
+
+| Degree Distribution | Network Metrics |
+|:-----------:|:-----------:|
+| ![Degree Distribution](figures/dashboard_screenshot_1.png) | ![Network Metrics](figures/dashboard_screenshot_2.png) |
+
+--- 

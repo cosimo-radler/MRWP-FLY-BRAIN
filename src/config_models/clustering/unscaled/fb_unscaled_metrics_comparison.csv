@@ -1,0 +1,3 @@
+,nodes,edges,density,avg_degree,max_degree,avg_in_degree,avg_out_degree,largest_cc_size,avg_clustering
+original,1000,1659,0.0016606606606606607,3.318,405,1.659,1.659,1.0,0.10323617553716892
+unscaled_clustering_config,1000,1521,0.0015225225225225225,3.042,315,1.521,1.521,0.946,0.10235835326731926

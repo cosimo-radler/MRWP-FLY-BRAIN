@@ -275,9 +275,9 @@ def extract_attack_threshold(network_type, attack_strategy, model_type='original
 # Initialize the Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# Setup caching - changed to MemoryCache for serverless compatibility
+# Setup caching
 cache = Cache(app.server, config={
-    'CACHE_TYPE': 'simple',  # Simple memory cache, no persistence needed for Vercel
+    'CACHE_TYPE': 'SimpleCache',
     'CACHE_DEFAULT_TIMEOUT': 300  # 5 minutes in seconds
 })
 
@@ -956,7 +956,7 @@ def update_region_comparison(selected_regions, model_type, plot_type):
 def update_metrics_bar_chart(metric_name, selected_regions, selected_models):
     return create_metrics_bar_chart(metric_name, selected_regions, selected_models)
 
-# Modify the app run section to only run locally, not on Vercel
+# Run the app
 if __name__ == '__main__':
     # Preload some data for faster initial rendering
     print("Preloading most common data configurations...")
@@ -969,5 +969,4 @@ if __name__ == '__main__':
                 cached_load_attack_results(network_type, attack, model_type)
     print("Preloading complete. Starting server...")
     
-    # Only run the server if this file is executed directly, not when imported by Vercel
     app.run(debug=True, port=8052) 

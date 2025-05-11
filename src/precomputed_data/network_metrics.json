@@ -1,0 +1,206 @@
+{
+  "eb": {
+    "original": {
+      "Nodes": 598,
+      "Edges": 1013,
+      "Avg Degree": 3.39,
+      "Clustering": 0.122,
+      "Avg Path Length": 3.14,
+      "Diameter": 7,
+      "Percolation Threshold": 0.932,
+      "Degree Attack Threshold": 0.834,
+      "Betweenness Attack Threshold": 0.917
+    },
+    "scaled_config": {
+      "Nodes": 1500,
+      "Edges": 2082,
+      "Avg Degree": 2.78,
+      "Clustering": 0.044,
+      "Avg Path Length": 3.68,
+      "Diameter": 9,
+      "Percolation Threshold": 0.916,
+      "Degree Attack Threshold": 0.815,
+      "Betweenness Attack Threshold": 0.878
+    },
+    "unscaled_config": {
+      "Nodes": 598,
+      "Edges": 919,
+      "Avg Degree": 3.07,
+      "Clustering": 0.091,
+      "Avg Path Length": 3.34,
+      "Diameter": 8,
+      "Percolation Threshold": 0.917,
+      "Degree Attack Threshold": 0.811,
+      "Betweenness Attack Threshold": 0.862
+    },
+    "upscaled_config": {
+      "Nodes": 3500,
+      "Edges": 5194,
+      "Avg Degree": 2.97,
+      "Clustering": 0.03,
+      "Avg Path Length": 3.97,
+      "Diameter": 9,
+      "Percolation Threshold": 0.925,
+      "Degree Attack Threshold": 0.825,
+      "Betweenness Attack Threshold": 0.9
+    },
+    "clustering_config": {
+      "Nodes": 1500,
+      "Edges": 2077,
+      "Avg Degree": 2.77,
+      "Clustering": 0.121,
+      "Avg Path Length": 3.54,
+      "Diameter": 9,
+      "Percolation Threshold": 0.933,
+      "Degree Attack Threshold": 0.732,
+      "Betweenness Attack Threshold": 0.748
+    },
+    "unscaled_clustering_config": {
+      "Nodes": 598,
+      "Edges": 919,
+      "Avg Degree": 3.07,
+      "Clustering": 0.122,
+      "Avg Path Length": 3.27,
+      "Diameter": 7,
+      "Percolation Threshold": 0.924,
+      "Degree Attack Threshold": 0.771,
+      "Betweenness Attack Threshold": 0.812
+    }
+  },
+  "fb": {
+    "original": {
+      "Nodes": 1000,
+      "Edges": 1649,
+      "Avg Degree": 3.3,
+      "Clustering": 0.103,
+      "Avg Path Length": 3.25,
+      "Diameter": 8,
+      "Percolation Threshold": 0.932,
+      "Degree Attack Threshold": 0.775,
+      "Betweenness Attack Threshold": 0.921
+    },
+    "scaled_config": {
+      "Nodes": 1500,
+      "Edges": 1845,
+      "Avg Degree": 2.46,
+      "Clustering": 0.034,
+      "Avg Path Length": 3.72,
+      "Diameter": 9,
+      "Percolation Threshold": 0.903,
+      "Degree Attack Threshold": 0.761,
+      "Betweenness Attack Threshold": 0.87
+    },
+    "unscaled_config": {
+      "Nodes": 1000,
+      "Edges": 1516,
+      "Avg Degree": 3.03,
+      "Clustering": 0.064,
+      "Avg Path Length": 3.52,
+      "Diameter": 9,
+      "Percolation Threshold": 0.921,
+      "Degree Attack Threshold": 0.769,
+      "Betweenness Attack Threshold": 0.884
+    },
+    "upscaled_config": {
+      "Nodes": 3500,
+      "Edges": 5086,
+      "Avg Degree": 2.91,
+      "Clustering": 0.03,
+      "Avg Path Length": 3.96,
+      "Diameter": 10,
+      "Percolation Threshold": 0.92,
+      "Degree Attack Threshold": 0.805,
+      "Betweenness Attack Threshold": 0.884
+    },
+    "clustering_config": {
+      "Nodes": 1500,
+      "Edges": 1815,
+      "Avg Degree": 2.42,
+      "Clustering": 0.102,
+      "Avg Path Length": 3.62,
+      "Diameter": 10,
+      "Percolation Threshold": 0.912,
+      "Degree Attack Threshold": 0.678,
+      "Betweenness Attack Threshold": 0.741
+    },
+    "unscaled_clustering_config": {
+      "Nodes": 1000,
+      "Edges": 1517,
+      "Avg Degree": 3.03,
+      "Clustering": 0.102,
+      "Avg Path Length": 3.43,
+      "Diameter": 8,
+      "Percolation Threshold": 0.919,
+      "Degree Attack Threshold": 0.72,
+      "Betweenness Attack Threshold": 0.748
+    }
+  },
+  "mb_kc": {
+    "original": {
+      "Nodes": 2500,
+      "Edges": 3260,
+      "Avg Degree": 2.61,
+      "Clustering": 0.038,
+      "Avg Path Length": 3.96,
+      "Diameter": 11,
+      "Percolation Threshold": 0.905,
+      "Degree Attack Threshold": 0.727,
+      "Betweenness Attack Threshold": 0.873
+    },
+    "scaled_config": {
+      "Nodes": 1500,
+      "Edges": 1616,
+      "Avg Degree": 2.15,
+      "Clustering": 0.001,
+      "Avg Path Length": 12.37,
+      "Diameter": 45,
+      "Percolation Threshold": 0.509,
+      "Degree Attack Threshold": 0.283,
+      "Betweenness Attack Threshold": 0.341
+    },
+    "unscaled_config": {
+      "Nodes": 2500,
+      "Edges": 3188,
+      "Avg Degree": 2.55,
+      "Clustering": 0.028,
+      "Avg Path Length": 4.09,
+      "Diameter": 12,
+      "Percolation Threshold": 0.891,
+      "Degree Attack Threshold": 0.741,
+      "Betweenness Attack Threshold": 0.858
+    },
+    "upscaled_config": {
+      "Nodes": 3500,
+      "Edges": 3695,
+      "Avg Degree": 2.11,
+      "Clustering": 0.01,
+      "Avg Path Length": 4.03,
+      "Diameter": 9,
+      "Percolation Threshold": 0.888,
+      "Degree Attack Threshold": 0.749,
+      "Betweenness Attack Threshold": 0.905
+    },
+    "clustering_config": {
+      "Nodes": 1500,
+      "Edges": 1612,
+      "Avg Degree": 2.15,
+      "Clustering": 0.013,
+      "Avg Path Length": 12.64,
+      "Diameter": 38,
+      "Percolation Threshold": 0.493,
+      "Degree Attack Threshold": 0.257,
+      "Betweenness Attack Threshold": 0.299
+    },
+    "unscaled_clustering_config": {
+      "Nodes": 2500,
+      "Edges": 3188,
+      "Avg Degree": 2.55,
+      "Clustering": 0.038,
+      "Avg Path Length": 3.99,
+      "Diameter": 12,
+      "Percolation Threshold": 0.894,
+      "Degree Attack Threshold": 0.697,
+      "Betweenness Attack Threshold": 0.684
+    }
+  }
+}
